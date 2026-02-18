@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header.tsx';
-import InstructionCard from './components/InstructionCard.tsx';
-import { generateVeoPrompts } from './services/geminiService.ts';
-import { StyleType, AppState } from './types.ts';
-import { STYLES, IMAGE_COUNTS } from './constants.ts';
+import Header from './components/Header';
+import InstructionCard from './components/InstructionCard';
+import { generateVeoPrompts } from './services/geminiService';
+import { StyleType, AppState } from './types';
+import { STYLES, IMAGE_COUNTS } from './constants';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -19,7 +19,7 @@ const App: React.FC = () => {
 
   const [hasKey, setHasKey] = useState<boolean>(true);
 
-  // Use a type-safe way to access aistudio if it's already defined globally, or fall back to any if not.
+  // Use a type-safe way to access aistudio if it's already defined globally
   const aistudio = (window as any).aistudio;
 
   useEffect(() => {
@@ -40,7 +40,6 @@ const App: React.FC = () => {
     if (aistudio) {
       try {
         await aistudio.openSelectKey();
-        // Race condition mitigation: assume success after triggering the selection
         setHasKey(true);
       } catch (e) {
         console.error("Error opening key selector:", e);
@@ -77,8 +76,6 @@ const App: React.FC = () => {
       const result = await generateVeoPrompts(state.title, state.count, state.style, state.images);
       setState(prev => ({ ...prev, result, loading: false }));
     } catch (err: any) {
-      // If the request fails with an error message containing "Requested entity was not found.",
-      // reset the key selection state and prompt the user to select a key again via openSelectKey().
       if (err.message?.includes("Requested entity was not found")) {
         setHasKey(false);
         setState(prev => ({ ...prev, error: "API Key không khả dụng. Vui lòng chọn lại Key từ project đã bật Billing.", loading: false }));
@@ -99,7 +96,7 @@ const App: React.FC = () => {
       
       <main className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <section className="md:col-span-1 space-y-6">
-          {/* API Key Selection UI matching user screenshot */}
+          {/* API Key Selection UI */}
           <div className="bg-[#0f172a] p-6 rounded-xl border border-[#1e293b] text-[14px]">
             <div className="mb-3 flex items-center gap-2">
               <span className="text-[#22d3ee] font-bold">Gemini API Key:</span>
@@ -116,7 +113,7 @@ const App: React.FC = () => {
               onClick={handleSelectKey}
               className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-3 text-gray-500 cursor-pointer hover:border-[#475569] transition-all flex items-center h-[48px]"
             >
-              <span className="truncate opacity-70">
+              <span className="truncate opacity-70 text-[12px]">
                 {hasKey ? '••••••••••••••••••••••••••••••••' : 'Dán API Key của bạn vào đây...'}
               </span>
             </div>
