@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import InstructionCard from './components/InstructionCard';
-import { generateVeoPrompts } from './services/geminiService';
-import { StyleType, AppState } from './types';
-import { STYLES, IMAGE_COUNTS } from './constants';
+import Header from './components/Header.tsx';
+import InstructionCard from './components/InstructionCard.tsx';
+import { generateVeoPrompts } from './services/geminiService.ts';
+import { StyleType, AppState } from './types.ts';
+import { STYLES, IMAGE_COUNTS } from './constants.ts';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -19,7 +19,7 @@ const App: React.FC = () => {
 
   const [hasKey, setHasKey] = useState<boolean>(true);
 
-  // Use a type-safe way to access aistudio if it's already defined globally
+  // Access aistudio global
   const aistudio = (window as any).aistudio;
 
   useEffect(() => {
@@ -40,6 +40,7 @@ const App: React.FC = () => {
     if (aistudio) {
       try {
         await aistudio.openSelectKey();
+        // Triggered selection, assume success for UI immediate response
         setHasKey(true);
       } catch (e) {
         console.error("Error opening key selector:", e);
@@ -96,24 +97,25 @@ const App: React.FC = () => {
       
       <main className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <section className="md:col-span-1 space-y-6">
-          {/* API Key Selection UI */}
-          <div className="bg-[#0f172a] p-6 rounded-xl border border-[#1e293b] text-[14px]">
-            <div className="mb-3 flex items-center gap-2">
-              <span className="text-[#22d3ee] font-bold">Gemini API Key:</span>
+          {/* STYLED API KEY SECTION TO MATCH SCREENSHOT WITH UPDATED URL */}
+          <div className="bg-[#0f172a] p-5 rounded-xl border border-[#1e293b] shadow-xl">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[#22d3ee] font-bold text-sm tracking-wide">Gemini API Key:</span>
               <a 
-                href="https://ai.google.dev/gemini-api/docs/billing" 
+                href="https://aistudio.google.com/api-keys" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[#22d3ee] underline text-[13px]"
+                className="text-[#22d3ee] text-xs underline opacity-80 hover:opacity-100 transition-opacity"
               >
                 (Lấy API Key Free)
               </a>
             </div>
+            
             <div 
               onClick={handleSelectKey}
-              className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-3 text-gray-500 cursor-pointer hover:border-[#475569] transition-all flex items-center h-[48px]"
+              className="w-full bg-[#1e293b] border border-[#334155] rounded-lg px-4 py-3 cursor-pointer hover:border-[#475569] transition-all flex items-center h-[46px]"
             >
-              <span className="truncate opacity-70 text-[12px]">
+              <span className="text-gray-500 text-sm truncate">
                 {hasKey ? '••••••••••••••••••••••••••••••••' : 'Dán API Key của bạn vào đây...'}
               </span>
             </div>
@@ -215,7 +217,7 @@ const App: React.FC = () => {
               <svg xmlns="http://www.w3.org/2000/center" className="h-16 w-16 mb-4 opacity-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-gray-400 italic">Kết quả sẽ hiển thị tại đây...</p>
+              <p className="text-gray-400 italic font-medium">Kết quả sẽ hiển thị tại đây...</p>
             </div>
           )}
 
