@@ -1,23 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import InstructionCard from './components/InstructionCard';
-import { generateVeoPrompts } from './services/geminiService';
-import { StyleType, AppState } from './types';
-import { STYLES, IMAGE_COUNTS } from './constants';
-
-// Declare global window properties to satisfy TS. 
-// Using the AIStudio interface name to match environment expectations and avoid type conflicts.
-declare global {
-  interface AIStudio {
-    hasSelectedApiKey(): Promise<boolean>;
-    openSelectKey(): Promise<void>;
-  }
-
-  interface Window {
-    aistudio?: AIStudio;
-  }
-}
+import Header from './components/Header.tsx';
+import InstructionCard from './components/InstructionCard.tsx';
+import { generateVeoPrompts } from './services/geminiService.ts';
+import { StyleType, AppState } from './types.ts';
+import { STYLES, IMAGE_COUNTS } from './constants.ts';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>({
@@ -32,11 +19,14 @@ const App: React.FC = () => {
 
   const [hasKey, setHasKey] = useState<boolean>(true);
 
+  // Use a type-safe way to access aistudio if it's already defined globally, or fall back to any if not.
+  const aistudio = (window as any).aistudio;
+
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio) {
+      if (aistudio) {
         try {
-          const selected = await window.aistudio.hasSelectedApiKey();
+          const selected = await aistudio.hasSelectedApiKey();
           setHasKey(selected);
         } catch (e) {
           console.error("Error checking key selection status:", e);
@@ -44,12 +34,12 @@ const App: React.FC = () => {
       }
     };
     checkKey();
-  }, []);
+  }, [aistudio]);
 
   const handleSelectKey = async () => {
-    if (window.aistudio) {
+    if (aistudio) {
       try {
-        await window.aistudio.openSelectKey();
+        await aistudio.openSelectKey();
         // Race condition mitigation: assume success after triggering the selection
         setHasKey(true);
       } catch (e) {
@@ -87,7 +77,8 @@ const App: React.FC = () => {
       const result = await generateVeoPrompts(state.title, state.count, state.style, state.images);
       setState(prev => ({ ...prev, result, loading: false }));
     } catch (err: any) {
-      // If billing is not enabled or key is invalid, reset and prompt for selection
+      // If the request fails with an error message containing "Requested entity was not found.",
+      // reset the key selection state and prompt the user to select a key again via openSelectKey().
       if (err.message?.includes("Requested entity was not found")) {
         setHasKey(false);
         setState(prev => ({ ...prev, error: "API Key không khả dụng. Vui lòng chọn lại Key từ project đã bật Billing.", loading: false }));
@@ -108,22 +99,22 @@ const App: React.FC = () => {
       
       <main className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <section className="md:col-span-1 space-y-6">
-          {/* API Key Selection UI - Clean version matching the screenshot */}
-          <div className="bg-[#151c2c] p-6 rounded-xl border border-[#2d3644] text-[14px]">
+          {/* API Key Selection UI matching user screenshot */}
+          <div className="bg-[#0f172a] p-6 rounded-xl border border-[#1e293b] text-[14px]">
             <div className="mb-3 flex items-center gap-2">
-              <span className="text-[#00bcd4] font-bold">Gemini API Key:</span>
+              <span className="text-[#22d3ee] font-bold">Gemini API Key:</span>
               <a 
-                href="https://aistudio.google.com/app/apikey" 
+                href="https://ai.google.dev/gemini-api/docs/billing" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[#00bcd4] underline text-[13px]"
+                className="text-[#22d3ee] underline text-[13px]"
               >
                 (Lấy API Key Free)
               </a>
             </div>
             <div 
               onClick={handleSelectKey}
-              className="w-full bg-[#0d121d] border border-[#2d3644] rounded-lg px-4 py-3 text-gray-400 cursor-pointer hover:border-[#3d4859] transition-all flex items-center h-[48px]"
+              className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-3 text-gray-500 cursor-pointer hover:border-[#475569] transition-all flex items-center h-[48px]"
             >
               <span className="truncate opacity-70">
                 {hasKey ? '••••••••••••••••••••••••••••••••' : 'Dán API Key của bạn vào đây...'}
@@ -138,7 +129,7 @@ const App: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Ví dụ: Cải tạo phòng ngủ cũ..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={state.title}
                   onChange={(e) => setState(prev => ({ ...prev, title: e.target.value }))}
                 />
@@ -190,7 +181,7 @@ const App: React.FC = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phong cách</label>
                 <select
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   value={state.style}
                   onChange={(e) => setState(prev => ({ ...prev, style: e.target.value as StyleType }))}
                 >
